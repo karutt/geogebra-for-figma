@@ -3,3 +3,10 @@ html {
     padding: 0;
     margin: 0;
 }
+
+body {
+    --ggb-primary-color: #ee0290; /* used for most UI elements, including the toolbar header and buttons */
+    --ggb-primary-variant-color: #880061; /* used for floating buttons on hover */
+    --ggb-dark-color: #880061; /* used for highlighted text in dialogs */
+    --ggb-light-color: #f186c0; /* used for progress bar */
+}
