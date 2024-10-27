@@ -13,30 +13,13 @@ export default function GeoGebraApplet() {
     }, []);
 
     useEffect(() => {
-        const loadScript = (src) => {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement("script");
-                script.src = src;
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.body.appendChild(script);
-            });
-        };
-
-        const loadGeoGebra = async () => {
-            try {
-                // CDNからスクリプトをロード
-                await loadScript("https://cdn.geogebra.org/apps/deployggb.js");
-            } catch (error) {
-                console.warn("CDNからの読み込みに失敗。ローカルスクリプトを使用します。");
-                // ローカルスクリプトをロード
-                await loadScript("/local-path/deployggb.js");
-            }
-
+        const script = document.createElement("script");
+        script.src = "https://cdn.geogebra.org/apps/deployggb.js";
+        script.async = true;
+        script.onload = () => {
             const container = ggbContainerRef.current;
             if (container) {
-                const { width, height } = container.getBoundingClientRect();
+                let { width, height } = container.getBoundingClientRect();
                 const params = {
                     appName: "graphing",
                     width,
@@ -49,13 +32,9 @@ export default function GeoGebraApplet() {
                 applet.inject("ggb-element");
             }
         };
+        document.body.appendChild(script);
 
-        loadGeoGebra();
-
-        return () => {
-            const script = document.querySelector("script[src*='deployggb.js']");
-            if (script) document.body.removeChild(script);
-        };
+        return () => document.body.removeChild(script);
     }, []);
 
     useEffect(() => {
