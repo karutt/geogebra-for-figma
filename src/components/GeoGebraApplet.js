@@ -1,16 +1,14 @@
 "use client";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 
-export default function GeoGebraApplet() {
-    const ggbContainerRef = useRef();
+export default function GeoGebraApplet({ ggbContainerRef }) {
     const updateAppletSize = useCallback(() => {
         const container = ggbContainerRef.current;
         if (container && window.ggbApplet) {
             let { width, height } = container.getBoundingClientRect();
             ggbApplet.setSize(width, height);
-            console.log(width, height);
         }
-    }, []);
+    }, [ggbContainerRef]);
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -35,7 +33,7 @@ export default function GeoGebraApplet() {
         document.body.appendChild(script);
 
         return () => document.body.removeChild(script);
-    }, []);
+    }, [ggbContainerRef]);
 
     useEffect(() => {
         window.addEventListener("resize", updateAppletSize);

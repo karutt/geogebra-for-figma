@@ -17,8 +17,8 @@ const Corner = () => {
 
     const resizeFigmaWindow = (width, height) => {
         const newSize = {
-            w: Math.max(50, Math.floor(parseInt(width))),
-            h: Math.max(50, Math.floor(parseInt(height))),
+            width: Math.max(300, Math.floor(parseInt(width))),
+            height: Math.max(300, Math.floor(parseInt(height))),
         };
 
         parent.postMessage(
@@ -69,6 +69,7 @@ const Corner = () => {
                         bottom: 2,
                         right: 2,
                         cursor: "nwse-resize",
+                        zIndex: 2,
                     },
                 }}
             />
