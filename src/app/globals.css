@@ -4,9 +4,44 @@ html {
     margin: 0;
 }
 
-body {
-    --ggb-primary-color: #ee0290; /* used for most UI elements, including the toolbar header and buttons */
-    --ggb-primary-variant-color: #880061; /* used for floating buttons on hover */
-    --ggb-dark-color: #880061; /* used for highlighted text in dialogs */
-    --ggb-light-color: #f186c0; /* used for progress bar */
+.GeoGebraFrame.applet-focused {
+    border: 1px solid #d3d3d3 !important;
+}
+
+.applet_scaler {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+}
+.GeoGebraFrame {
+    border: 1px solid #d3d3d3 !important;
+}
+.GeoGebraFrame .main > * {
+    width: 100% !important;
+}
+.undoRedoPanel.fullscreen {
+    left: 0 !important;
+    top: 40px !important;
+}
+.header.hide {
+    display: none !important;
+}
+.main.hide {
+    left: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+.button.flatButton.menu.landscapeMenuBtn.hide {
+    display: none !important;
+}
+.algebraPanel.customScrollbar.tab.hide {
+    width: 100% !important;
+}
+.avItem,
+.avInputItem,
+.avInputItem > div,
+.scrollableTextBox.noPreview {
+    width: 100% !important;
 }
