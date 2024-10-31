@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Icon, View } from "reshaped";
+import { LOSS } from "@/constantVariable";
+import { postMessage } from "@/utils";
 
 const Resize = () => (
     <svg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'>
@@ -12,22 +14,19 @@ const Resize = () => (
     </svg>
 );
 
-const Corner = () => {
+const Corner = ({ headerRef }) => {
     const resizeIcon = useRef();
 
     const resizeFigmaWindow = (width, height) => {
         const newSize = {
-            width: Math.max(300, Math.floor(parseInt(width))),
-            height: Math.max(300, Math.floor(parseInt(height))),
+            width: Math.max(300 + LOSS, Math.floor(parseInt(width))),
+            height: Math.max(
+                200 + LOSS + headerRef.current.getBoundingClientRect().height,
+                Math.floor(parseInt(height))
+            ),
         };
 
-        parent.postMessage(
-            {
-                pluginMessage: { type: "resize", size: newSize },
-                pluginId: "1362143149411056847",
-            },
-            "https://www.figma.com"
-        );
+        postMessage({ type: "resize", size: newSize });
     };
 
     useEffect(() => {

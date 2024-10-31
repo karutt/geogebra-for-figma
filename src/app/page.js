@@ -7,7 +7,9 @@ import { useRef, useState } from "react";
 
 export default function Home() {
     const ggbContainerRef = useRef();
+    const headerRef = useRef();
     const [coordSystem, setCoordSystem] = useState({});
+
     const hideMenuBar = (show) => {
         const array = [
             ".header",
@@ -29,13 +31,14 @@ export default function Home() {
                 ggbContainerRef={ggbContainerRef}
                 coordSystem={coordSystem}
                 hideMenuBar={hideMenuBar}
+                headerRef={headerRef}
             />
             <GeoGebraApplet
                 ggbContainerRef={ggbContainerRef}
                 setCoordSystem={setCoordSystem}
                 hideMenuBar={hideMenuBar}
             />
-            <Corner />
+            <Corner headerRef={headerRef} />
         </View>
     );
 }

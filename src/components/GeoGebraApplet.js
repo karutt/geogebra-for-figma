@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useCallback, useRef } from "react";
+import PropTypes from "prop-types";
+import { postMessage } from "@/utils";
 
 export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMenuBar }) {
     const canvasRef = useRef();
@@ -13,18 +15,18 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
     }, [ggbContainerRef]);
 
     const handleClientEvent = useCallback(
-        (e) => {
-            if (e.type !== "viewChanged2D") return;
+        (event) => {
+            if (event.type !== "viewChanged2D") return;
 
-            const { width: w, height: h } = canvasRef.current;
-            const { xZero, yZero, scale, yscale } = e;
+            const { width: canvasWidth, height: canvasHeight } = canvasRef.current;
+            const { xZero, yZero, scale, yscale } = event;
 
             const coordData = {
-                width: w / (2 * scale),
-                height: h / (2 * yscale),
+                width: canvasWidth / (2 * scale),
+                height: canvasHeight / (2 * yscale),
                 xmin: -xZero / scale,
-                xmax: (w / 2 - xZero) / scale,
-                ymin: -(h / 2 - yZero) / yscale,
+                xmax: (canvasWidth / 2 - xZero) / scale,
+                ymin: -(canvasHeight / 2 - yZero) / yscale,
                 ymax: yZero / yscale,
             };
             setCoordSystem(coordData);
@@ -44,7 +46,7 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
             showToolBar: true,
             showAlgebraInput: true,
             showMenuBar: true,
-            appletOnLoad: (api) => handleAppletLoad(api),
+            appletOnLoad: handleAppletLoad,
         };
 
         const applet = new GGBApplet(params, true);
@@ -56,6 +58,16 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
         canvasRef.current = canvas;
         ggbApplet.registerClientListener(handleClientEvent);
         hideMenuBar(false);
+        postMessage({ type: "setXML" });
+        postMessage({ type: "setSize" });
+    };
+
+    onmessage = (e) => {
+        if (e.data.pluginMessage.type === "setXML") {
+            if (window.ggbApplet) {
+                ggbApplet.setXML(e.data.pluginMessage.xml);
+            }
+        }
     };
 
     useEffect(() => {
@@ -93,3 +105,9 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
         </div>
     );
 }
+
+GeoGebraApplet.propTypes = {
+    ggbContainerRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
+    setCoordSystem: PropTypes.func.isRequired,
+    hideMenuBar: PropTypes.func.isRequired,
+};

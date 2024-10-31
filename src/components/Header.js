@@ -1,39 +1,47 @@
-import { Button, View, ActionBar } from "reshaped";
-import { centerX, centerY, centerXY, menubar, fullscreen, sidebar } from "./icons";
-import { TextField } from "reshaped";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { Button, View, ActionBar, TextField } from "reshaped";
+import { centerX, centerY, centerXY, menubar, sidebar } from "./icons";
+import { useState, useEffect, useCallback } from "react";
+import { postMessage } from "@/utils";
+import PropTypes from "prop-types";
+import { LOSS } from "@/constantVariable";
 
-const Header = ({ ggbContainerRef, coordSystem, hideMenuBar }) => {
-    const [size, setSize] = useState({ width: 0, height: 0 });
+const Header = ({ ggbContainerRef, coordSystem, hideMenuBar, headerRef }) => {
+    const [size, setSize] = useState({ width: 300, height: 200 });
     const [sidebarVisible, setSidebarVisible] = useState(true);
     const [menuBarVisible, setMenuBarVisible] = useState(true);
-    const headerRef = useRef();
 
     const updateWindowSize = useCallback(() => {
         const container = ggbContainerRef.current;
         if (container) {
-            const { width, height } = container.getBoundingClientRect();
+            let { width, height } = container.getBoundingClientRect();
+            [width, height] = [width - LOSS, height - LOSS];
             setSize({ width, height });
         }
     }, [ggbContainerRef]);
 
     const updatePluginSize = () => {
-        const headerHeight = headerRef.current.getBoundingClientRect().height;
+        const initialHeaderHeight = headerRef.current.getBoundingClientRect().height;
         const adjustedWidth = Math.max(300, size.width || 300);
         const adjustedHeight = Math.max(200, size.height || 200);
-
-        setSize({ width: adjustedWidth, height: adjustedHeight });
-
-        parent.postMessage(
-            {
-                pluginMessage: {
-                    type: "resize",
-                    size: { width: adjustedWidth, height: adjustedHeight + headerHeight },
-                },
-                pluginId: "1362143149411056847",
+        postMessage({
+            type: "resize",
+            size: {
+                width: adjustedWidth + LOSS,
+                height: adjustedHeight + initialHeaderHeight + LOSS,
             },
-            "https://www.figma.com"
-        );
+        });
+        setTimeout(() => {
+            const headerHeight = headerRef.current.getBoundingClientRect().height;
+            if (headerHeight !== initialHeaderHeight) {
+                postMessage({
+                    type: "resize",
+                    size: {
+                        width: adjustedWidth + LOSS,
+                        height: adjustedHeight + headerHeight + LOSS,
+                    },
+                });
+            }
+        }, 100);
     };
 
     useEffect(() => {
@@ -45,7 +53,7 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar }) => {
     const handleSizeChange = (value, key) => {
         const parsedValue = parseInt(value, 10);
         if (!isNaN(parsedValue) || value === "") {
-            setSize((prevSize) => ({ ...prevSize, [key]: value || "" }));
+            setSize((prevSize) => ({ ...prevSize, [key]: parseInt(value) || "" }));
         }
     };
 
@@ -72,7 +80,7 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar }) => {
         <ActionBar position='top' elevated attributes={{ ref: headerRef }}>
             <View direction='row'>
                 <View.Item grow>
-                    <View direction='row' gap={1}>
+                    <View direction='row' gap={2}>
                         <Button icon={sidebar} color='neutral' onClick={toggleSidebar} />
                         <Button icon={menubar} color='neutral' onClick={toggleMenuBar} />
                         <Button
@@ -105,28 +113,57 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar }) => {
                                 )
                             }
                         />
-                        <TextField
-                            name='width'
-                            prefix='w'
-                            value={size.width}
-                            onChange={(e) => handleSizeChange(e.value, "width")}
-                            attributes={textFieldAttributes}
-                            onBlur={updatePluginSize}
-                        />
-                        <TextField
-                            name='height'
-                            prefix='h'
-                            value={size.height}
-                            onChange={(e) => handleSizeChange(e.value, "height")}
-                            attributes={textFieldAttributes}
-                            onBlur={updatePluginSize}
-                        />
+                        <View direction='row' gap={2}>
+                            <TextField
+                                name='width'
+                                prefix='w'
+                                value={size.width}
+                                onChange={(e) => handleSizeChange(e.value, "width")}
+                                attributes={textFieldAttributes}
+                                onBlur={updatePluginSize}
+                            />
+                            <TextField
+                                name='height'
+                                prefix='h'
+                                value={size.height}
+                                onChange={(e) => handleSizeChange(e.value, "height")}
+                                attributes={textFieldAttributes}
+                                onBlur={updatePluginSize}
+                            />
+                        </View>
                     </View>
                 </View.Item>
-                <Button color='primary'>Export</Button>
+                <Button
+                    color='primary'
+                    onClick={() => {
+                        ggbApplet.setPerspective("G");
+                        ggbApplet.exportSVG((svg) => {
+                            if (typeof svg === "string" || svg instanceof String) {
+                                const xml = ggbApplet.getXML();
+                                const body = document.querySelector("body");
+                                const size = { width: body.clientWidth, height: body.clientHeight };
+                                postMessage({ type: "export", svg, xml, size });
+                            }
+                        });
+                    }}>
+                    Export
+                </Button>
             </View>
         </ActionBar>
     );
+};
+
+Header.propTypes = {
+    ggbContainerRef: PropTypes.object.isRequired,
+    coordSystem: PropTypes.shape({
+        width: PropTypes.number.isRequired,
+        height: PropTypes.number.isRequired,
+        xmin: PropTypes.number.isRequired,
+        xmax: PropTypes.number.isRequired,
+        ymin: PropTypes.number.isRequired,
+        ymax: PropTypes.number.isRequired,
+    }).isRequired,
+    hideMenuBar: PropTypes.func.isRequired,
 };
 
 export default Header;
