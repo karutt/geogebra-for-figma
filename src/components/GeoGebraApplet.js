@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useCallback, useRef } from "react";
-import PropTypes from "prop-types";
-import { postMessage } from "@/utils";
+import { postMessage } from "@/utils/utils";
 
 export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMenuBar }) {
     const canvasRef = useRef();
@@ -47,6 +46,7 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
             showAlgebraInput: true,
             showMenuBar: true,
             appletOnLoad: handleAppletLoad,
+            language: window.navigator.language,
         };
 
         const applet = new GGBApplet(params, true);
@@ -62,13 +62,18 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
         postMessage({ type: "setSize" });
     };
 
-    onmessage = (e) => {
-        if (e.data.pluginMessage.type === "setXML") {
-            if (window.ggbApplet) {
-                ggbApplet.setXML(e.data.pluginMessage.xml);
+    useEffect(() => {
+        const handlePluginMessage = (e) => {
+            if (e.data.pluginMessage.type === "setXML") {
+                if (window.ggbApplet) {
+                    ggbApplet.setXML(e.data.pluginMessage.xml);
+                }
             }
+        };
+        if (typeof window !== "undefined") {
+            window.onmessage = handlePluginMessage;
         }
-    };
+    }, []);
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -105,9 +110,3 @@ export default function GeoGebraApplet({ ggbContainerRef, setCoordSystem, hideMe
         </div>
     );
 }
-
-GeoGebraApplet.propTypes = {
-    ggbContainerRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
-    setCoordSystem: PropTypes.func.isRequired,
-    hideMenuBar: PropTypes.func.isRequired,
-};

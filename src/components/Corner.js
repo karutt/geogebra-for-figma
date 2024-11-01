@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Icon, View } from "reshaped";
-import { LOSS } from "@/constantVariable";
-import { postMessage } from "@/utils";
+import { LOSS } from "@/constants/variable.js.js";
+import { postMessage } from "@/utils/utils";
 
 const Resize = () => (
     <svg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'>

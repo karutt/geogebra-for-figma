@@ -1,9 +1,8 @@
 import { Button, View, ActionBar, TextField } from "reshaped";
 import { centerX, centerY, centerXY, menubar, sidebar } from "./icons";
 import { useState, useEffect, useCallback } from "react";
-import { postMessage } from "@/utils";
-import PropTypes from "prop-types";
-import { LOSS } from "@/constantVariable";
+import { postMessage } from "@/utils/utils";
+import { LOSS } from "@/constants/variable.js.js";
 
 const Header = ({ ggbContainerRef, coordSystem, hideMenuBar, headerRef }) => {
     const [size, setSize] = useState({ width: 300, height: 200 });
@@ -69,6 +68,20 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar, headerRef }) => {
 
     const resetCoordSystem = (xRange, yRange) => {
         ggbApplet.setCoordSystem(...xRange, ...yRange);
+    };
+
+    const getAllObjectNames = () => {
+        var allObjects = ggbApplet.getAllObjectNames();
+        var formulas = [];
+        for (var i = 0; i < allObjects.length; i++) {
+            var objName = allObjects[i];
+            var formula = ggbApplet.getLaTeXString(objName);
+            formulas.push(objName + ": " + formula);
+        }
+        return {
+            frameName: formulas.length > 1 ? "GFormulas" : "GFormula",
+            groupName: formulas.length ? formulas.join("\\\\") : "NoContent",
+        };
     };
 
     const textFieldAttributes = {
@@ -141,8 +154,20 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar, headerRef }) => {
                             if (typeof svg === "string" || svg instanceof String) {
                                 const xml = ggbApplet.getXML();
                                 const body = document.querySelector("body");
-                                const size = { width: body.clientWidth, height: body.clientHeight };
-                                postMessage({ type: "export", svg, xml, size });
+                                const { frameName, groupName } = getAllObjectNames();
+                                console.log(groupName);
+                                const size = {
+                                    width: body.clientWidth,
+                                    height: body.clientHeight,
+                                };
+                                postMessage({
+                                    type: "export",
+                                    svg,
+                                    xml,
+                                    size,
+                                    frameName,
+                                    groupName,
+                                });
                             }
                         });
                     }}>
@@ -151,19 +176,6 @@ const Header = ({ ggbContainerRef, coordSystem, hideMenuBar, headerRef }) => {
             </View>
         </ActionBar>
     );
-};
-
-Header.propTypes = {
-    ggbContainerRef: PropTypes.object.isRequired,
-    coordSystem: PropTypes.shape({
-        width: PropTypes.number.isRequired,
-        height: PropTypes.number.isRequired,
-        xmin: PropTypes.number.isRequired,
-        xmax: PropTypes.number.isRequired,
-        ymin: PropTypes.number.isRequired,
-        ymax: PropTypes.number.isRequired,
-    }).isRequired,
-    hideMenuBar: PropTypes.func.isRequired,
 };
 
 export default Header;
